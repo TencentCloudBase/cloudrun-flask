@@ -75,10 +75,6 @@ def hello():
 
 在`cloudrun-flask`目录下执行`python3 manage.py runserver 0.0.0.0:8080` 启动服务, 打开浏览器并查看`http://127.0.0.1:8080`查看返回结果。
 
-### 源码
-
-[cloudrun-flask](https://github.com/TencentCloudBase/tcbr-templates/tree/main/cloudrun-flask)
-
 ### 部署到云托管
 
 1、配置依赖项
