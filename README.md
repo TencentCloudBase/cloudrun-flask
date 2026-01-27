@@ -2,6 +2,20 @@
 
 一个完整的 Flask 应用模板，支持快速部署到 CloudBase 平台。
 
+## 📚 文档导航
+
+| 文档 | 描述 | 适用场景 |
+|------|------|----------|
+| [项目创建指南](./docs/project-setup.md) | 从零开始创建 Flask 项目的详细步骤 | 新手入门、项目初始化 |
+| [HTTP 云函数部署](./docs/http-function.md) | 部署到 CloudBase HTTP 云函数的完整指南 | 轻量级 API、按需计费 |
+| [云托管部署](./docs/cloud-run.md) | 部署到 CloudBase 云托管的完整指南 | 企业应用、持续运行 |
+
+### 🎯 快速选择指南
+
+- **🆕 新手开发者** → 先看 [项目创建指南](./docs/project-setup.md)
+- **☁️ 轻量级部署** → 使用 [HTTP 云函数部署](./docs/http-function.md)
+- **🏢 企业级部署** → 使用 [云托管部署](./docs/cloud-run.md)
+
 ## 🚀 快速开始
 
 ### 前置条件
@@ -40,6 +54,10 @@ cloudrun-flask/
 ├── app.py                   # Flask 主应用文件
 ├── requirements.txt         # Python 依赖文件
 ├── .gitignore              # Git 忽略文件
+├── docs/                   # 📚 详细文档目录
+│   ├── project-setup.md    # 项目创建指南
+│   ├── http-function.md    # HTTP 云函数部署指南
+│   └── cloud-run.md        # 云托管部署指南
 ├── env/                    # 虚拟环境（本地开发用）
 ├── scf_bootstrap           # HTTP 云函数启动脚本
 ├── Dockerfile              # 云托管容器配置
@@ -66,41 +84,68 @@ cloudrun-flask/
 
 ## 📚 详细部署指南
 
+> **💡 提示**：以下是快速概览，详细步骤请查看对应的专门文档。
+
 ### 🔥 HTTP 云函数部署
 
 适合轻量级应用和 API 服务，按请求计费，冷启动快。
 
-**快速部署步骤：**
-1. 创建 `scf_bootstrap` 启动脚本
-2. 包含虚拟环境目录
-3. 通过 CloudBase 控制台上传部署
+**特点**：
+- ✅ 按请求次数计费，成本低
+- ✅ 自动扩缩容，无需管理服务器
+- ✅ 冷启动快，适合间歇性访问
+- ⚠️ 固定使用 9000 端口
 
-**scf_bootstrap 示例：**
+**📖 完整指南**：[HTTP 云函数部署文档](./docs/http-function.md)
+
+**快速部署**：
 ```bash
-#!/bin/bash
+# 1. 创建启动脚本
+echo '#!/bin/bash
 export PORT=9000
 export PYTHONPATH="./env/lib/python3.10/site-packages:$PYTHONPATH"
-/var/lang/python310/bin/python3.10 app.py
+/var/lang/python310/bin/python3.10 app.py' > scf_bootstrap
+
+# 2. 安装依赖到 env 目录
+pip install -r requirements.txt -t env/lib/python3.10/site-packages/
+
+# 3. 打包上传到 CloudBase 控制台
 ```
 
 ### 🐳 云托管部署
 
 适合企业级应用，支持更复杂的部署需求，容器化部署。
 
-**快速部署步骤：**
-1. 创建 `Dockerfile` 容器配置
-2. 配置 `.dockerignore` 文件
-3. 通过 CloudBase 控制台或 CLI 部署
+**特点**：
+- ✅ 持续运行，适合企业级应用
+- ✅ 完全自定义环境和端口
+- ✅ 支持复杂的依赖和配置
+- ⚠️ 按资源使用量计费
 
-**Dockerfile 示例：**
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 8080
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+**📖 完整指南**：[云托管部署文档](./docs/cloud-run.md)
+
+**快速部署**：
+```bash
+# 1. 构建镜像
+docker build -t flask-app .
+
+# 2. 推送到 CloudBase 镜像仓库
+# 3. 通过控制台或 CLI 部署
+```
+
+### 🔧 项目创建
+
+如果你是新手或需要从零开始创建项目：
+
+**📖 完整指南**：[项目创建指南](./docs/project-setup.md)
+
+**快速创建**：
+```bash
+# 基础项目创建
+mkdir my-flask-app && cd my-flask-app
+python -m venv env
+source env/bin/activate
+pip install Flask gunicorn
 ```
 
 ## 🔧 API 接口
@@ -147,23 +192,46 @@ curl -X DELETE https://your-app-url/api/users/1
 
 ## ❓ 常见问题
 
-### 端口配置
+### 🚨 部署相关问题
+
+**Q: 如何选择部署方式？**
+A: 
+- **轻量级 API** → [HTTP 云函数部署](./docs/http-function.md)
+- **企业级应用** → [云托管部署](./docs/cloud-run.md)
+- **新手入门** → [项目创建指南](./docs/project-setup.md)
+
+**Q: 部署时遇到问题怎么办？**
+A: 查看对应的部署文档，里面有详细的故障排除指南：
+- [HTTP 云函数常见问题](./docs/http-function.md#常见问题)
+- [云托管常见问题](./docs/cloud-run.md#常见问题)
+
+### ⚙️ 配置相关
+
+**端口配置**：
 - **HTTP 云函数**：必须使用 9000 端口
 - **云托管**：推荐使用 8080 端口，支持自定义
 
-### 文件要求
+**文件要求**：
 - **HTTP 云函数**：需要 `scf_bootstrap` 启动脚本和 `env` 目录
 - **云托管**：需要 `Dockerfile` 和 `.dockerignore`
 
-### 数据存储
-- 当前使用内存存储（重启后数据丢失）
-- 生产环境建议集成数据库（PostgreSQL、MySQL 等）
+### 💾 数据存储
 
-### 如何选择部署方式？
-- **轻量级应用**：选择 HTTP 云函数
-- **企业级应用**：选择云托管
-- **成本敏感**：选择 HTTP 云函数
-- **需要持续运行**：选择云托管
+**当前配置**：
+- 使用内存存储（重启后数据丢失）
+- 适合演示和测试环境
+
+**生产环境建议**：
+- 集成数据库（PostgreSQL、MySQL 等）
+- 使用 Flask-SQLAlchemy 进行 ORM 操作
+- 详细配置请查看各部署文档
+
+### 📖 更多帮助
+
+如需更详细的帮助，请查看：
+- [项目创建指南](./docs/project-setup.md) - 完整的项目创建流程
+- [HTTP 云函数部署](./docs/http-function.md) - 云函数部署详细步骤
+- [云托管部署](./docs/cloud-run.md) - 云托管部署详细步骤
 
 ## 🛠️ 开发工具
 
@@ -212,6 +280,11 @@ DATABASE_URL=postgresql://user:password@localhost/dbname
 
 ## 🔗 相关链接
 
+### 📚 项目文档
+- [项目创建指南](./docs/project-setup.md) - 从零开始创建 Flask 项目
+- [HTTP 云函数部署](./docs/http-function.md) - 轻量级云函数部署方案
+- [云托管部署](./docs/cloud-run.md) - 企业级容器化部署方案
+
 ### 🌐 官方文档
 - [CloudBase 官方文档](https://docs.cloudbase.net/)
 - [Flask 官方文档](https://flask.palletsprojects.com/)
@@ -225,6 +298,7 @@ DATABASE_URL=postgresql://user:password@localhost/dbname
 
 **需要帮助？** 
 
-- 查看 [Flask 官方文档](https://flask.palletsprojects.com/)
-- 访问 [CloudBase 官方文档](https://docs.cloudbase.net/)
-- 参考 [Flask 快速入门](https://flask.palletsprojects.com/quickstart/)
+- 🆕 **新手入门** → [项目创建指南](./docs/project-setup.md)
+- ☁️ **云函数部署** → [HTTP 云函数部署](./docs/http-function.md)
+- 🐳 **容器部署** → [云托管部署](./docs/cloud-run.md)
+- 📖 **Flask 官方文档** → [Flask 快速入门](https://flask.palletsprojects.com/quickstart/)
